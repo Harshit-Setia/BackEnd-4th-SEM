@@ -1,30 +1,23 @@
-// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const eventRoutes = require('./routes/events');
 const userRoutes = require('./routes/users');
-const { authenticate } = require('./middleware/auth'); // Import the correct function
+const { authenticate } = require('./middleware/auth');
 require('dotenv').config();
 
-// Initialize the Express app
 const app = express();
-
 // Middleware
-app.use(cors()); // Enable CORS
-app.use(bodyParser.json()); // Parse JSON request bodies
+app.use(cors());
+app.use(bodyParser.json());
 
-// Routes
-app.use('/api/events', authenticate, eventRoutes); // Protect event routes
-app.use('/api/users', userRoutes); // User routes may or may not need auth.
+// routes
+// event routes
+app.use('/api/events', authenticate, eventRoutes); 
+// user route
+app.use('/api/users', userRoutes); 
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send({ message: 'Something went wrong!' });
-});
-
-// Start server
+// server start
 const PORT = process.env.PORT || 0;
 const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${server.address().port}`);
