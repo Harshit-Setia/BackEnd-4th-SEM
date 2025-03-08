@@ -40,7 +40,7 @@ const registerUser = (req, res) => {
             res.status(400).json({ message: "User already exists" });
             return;
         }
-        const newUser = { username, email, password }; // Plain text password storage
+        const newUser = { username, email, password };
         users.push(newUser);
         writeUserDataToFile(users);
         res.status(201).json({ message: "User registered successfully" });
@@ -60,7 +60,7 @@ const loginUser = (req, res) => {
             res.status(404).json({ message: "User not found" });
             return;
         }
-        if (password !== user.password) { // Plain text password comparison
+        if (password !== user.password) {
             res.status(400).json({ message: "Invalid credentials" });
             return;
         }

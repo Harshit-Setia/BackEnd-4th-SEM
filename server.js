@@ -1,15 +1,15 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
 const eventRoutes = require('./routes/events');
 const userRoutes = require('./routes/users');
 const { authenticate } = require('./middleware/auth');
+const connectDB=require('./config/db.js')
 require('dotenv').config();
 
-const app = express();
+
 // Middleware
-app.use(cors());
-app.use(bodyParser.json());
+const app = express();
+app.use(express.json()); 
+connectDB();
 
 // routes
 // event routes
