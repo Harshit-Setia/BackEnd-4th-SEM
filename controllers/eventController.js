@@ -1,131 +1,104 @@
-const fs = require('fs');
-let dataFilePath = './DB/eventData.json';
+const express=require('express')
+const Event = require('../models/eventModel.js')
 
-
-// read event
-const readEventsFromFile = () => {
-    if (!fs.existsSync(dataFilePath)) {
-        return [];
-    }
-    const data = fs.readFileSync(dataFilePath);
-    return JSON.parse(data);
-};
-
-// write event
-const writeEventsToFile = (events) => {
-    fs.writeFileSync(dataFilePath, JSON.stringify(events, null, 2));
-};
-
-// all events
-const getAllEvents = (req, res) => {
+// get all event
+const getAllEvent= async (req,res)=>{
     try {
-        const events = readEventsFromFile();
-        res.status(200).json(events);
+        
+        const events=await Event.find()
+        res.status(200).json(events)
+
     } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({error:error.message})
     }
-};
+}
 
-// get by id
-const getEvent = (req, res) => {
+// get event by id
+const getEvent= async (req,res)=>{
     try {
-        const eventId = req.params.id;
-        const events = readEventsFromFile();
-        const event = events.find(event => event.id === eventId);
+        
+        const eventId=req.params.id
+        const event=await Event.findById(eventId)
 
-        if (!event) {
-            res.status(404).json({ message: "Event not found" });
-            return;
+        if(!event){
+            res.status(404).json({message:"Event not Found"})
+            return
+        }
+        res.status(200).json(event)
+
+    } catch (error) {
+        res.status(500).json({error:error.message})
+    }
+}
+
+// create new event
+const createEvent= async (req,res)=>{
+    try {
+        
+        const userId=req.user.id
+
+        const newEvent=new Event({...req.body,head:userId})
+        const savedEvent=await newEvent.save()
+
+        res.status(201).json(savedEvent)
+
+    } catch (error) {
+        res.status(500).json({error:error.message})
+    }
+}
+
+// update event
+const updateEvent= async (req,res)=>{
+    try {
+        
+        const userId=req.user.id
+
+        const event=await Event.findById(req.params.id)
+
+        if(!event){
+            res.status(404).json({message:"Event not found"})
+            return
         }
 
-        res.status(200).json(event);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ error: error.message });
-    }
-};
+        if(event.head.toString()!==userId){
+            res.status(403).json({message:"You donot have permission to update this event"})
+            return
+        }
 
-// new event
-const createEvent = (req, res) => {
+        const updatedEvent=await Event.findByIdAndUpdate(req.params.id, req.body,{new:true})
+
+        res.status(200).json(updatedEvent)
+
+    } catch (error) {
+        res.status(500).json({error:error.message})
+    }
+}
+
+// delete events
+const deleteEvent= async (req,res)=>{
     try {
-        const userId = req.user.id;
+        
+        const userId=req.user.id
 
-        const newEvent = {
-            id: Date.now().toString(),
-            ...req.body,
-            createdBy: userId,
-        };
+        const event=await Event.findById(req.params.id)
 
-        const events = readEventsFromFile();
-        events.push(newEvent);
-        writeEventsToFile(events);
+        if(!event){
+            res.status(404).json({message:"Event not found"})
+            return
+        }
 
-        res.status(201).send("Event added");
+        if(event.head.toString()!==userId){
+            res.status(403).json({message:"You donot have permission to update this event"})
+            return
+        }
+
+        await Event.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({message:"Event Deleted"})
+
     } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({error:error.message})
     }
-};
+}
 
-//update event
-const updateEvent = (req, res) => {
-    try {
-        const userId = req.user.id;
-        const eventId = req.params.id;
-        const events = readEventsFromFile();
-        const eventIndex = events.findIndex(event => event.id === eventId);
-
-        if (eventIndex === -1) {
-            res.status(404).json({ message: "Event not found" });
-            return;
-        }
-
-        if (events[eventIndex].createdBy !== userId) {
-            res.status(403).json({ message: "You do not have permission to update this event" });
-            return;
-        }
-
-        const updatedEvent = { ...events[eventIndex], ...req.body };
-        events[eventIndex] = updatedEvent;
-        writeEventsToFile(events);
-
-        res.status(200).json(updatedEvent);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ error: error.message });
-    }
-};
-
-// delete event
-const deleteEvent = (req, res) => {
-    try {
-        const userId = req.user.id;
-        const eventId = req.params.id;
-        const events = readEventsFromFile();
-        const eventIndex = events.findIndex(event => event.id === eventId);
-        if (eventIndex === -1) {
-            res.status(404).json({ message: "Event not found" });
-            return;
-        }
-        if (events[eventIndex].createdBy !== userId) {
-            res.status(403).json({ message: "You do not have permission to delete this event" });
-            return;
-        }
-        events.splice(eventIndex, 1);
-        writeEventsToFile(events);
-        res.status(200).json({ message: "Event deleted" });
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ error: error.message });
-    }
-};
-
-
-module.exports = {
-    getAllEvents,
-    getEvent,
-    createEvent,
-    updateEvent,
-    deleteEvent,
-};
+module.exports = {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent}
