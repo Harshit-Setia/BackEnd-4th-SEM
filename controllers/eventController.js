@@ -67,12 +67,42 @@ const updateEvent= async (req,res)=>{
 
         const updatedEvent=await Event.findByIdAndUpdate(req.params.id, req.body,{new:true})
 
-        res.status(200).json(updatedEvent)
+        res.status(204).json(updatedEvent)
 
     } catch (error) {
         res.status(500).json({error:error.message})
     }
 }
+
+//regester/un-regester
+const registerEvent = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const eventId = req.params.id;
+
+        const event = await Event.findById(eventId);
+
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
+        const attendeeIndex = event.attendees.indexOf(userId);
+
+        if (attendeeIndex === -1) {
+            // User is not registered, so register them
+            event.attendees.push(userId);
+            await event.save();
+            return res.status(200).json({ message: "Registered successfully" });
+        } else {
+            // User is already registered, so unregister them
+            event.attendees.splice(attendeeIndex, 1);
+            await event.save();
+            return res.status(200).json({ message: "Unregistered successfully" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 // delete events
 const deleteEvent= async (req,res)=>{
@@ -101,4 +131,4 @@ const deleteEvent= async (req,res)=>{
     }
 }
 
-module.exports = {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent}
+module.exports = {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent,registerEvent}
