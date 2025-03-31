@@ -1,7 +1,7 @@
-const express=require('express')
-const User = require('../models/userModel.js')
-const bcrypt=require('bcrypt')
-const jwt=require('jsonwebtoken')
+import express from 'express'
+import {User} from '../models/userModel.js'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 
 // register
@@ -65,4 +65,4 @@ const loginUser= async (req,res)=>{
     }
 }
 
-module.exports = {registerUser,loginUser}
+export {registerUser,loginUser}

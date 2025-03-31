@@ -1,5 +1,4 @@
-const mongoose = require("mongoose")
-const {Schema} = mongoose
+import mongoose,{Schema} from "mongoose"
 
 const eventSchema = new Schema({
     name:{type:String,required:true},
@@ -7,9 +6,8 @@ const eventSchema = new Schema({
     location:{type:String,required:true},
     desc:{type:String},
     attendees:{type:[mongoose.Schema.Types.ObjectId],ref:"User"},
-    head:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:true}
+    head:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:true},
+    poster:{type:String,required:true}
 })
 
-Event=mongoose.model("Event",eventSchema)
-
-module.exports = Event
+export const Event=mongoose.model("Event",eventSchema)

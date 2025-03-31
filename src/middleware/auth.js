@@ -1,7 +1,7 @@
-const express=require('express')
-const jwt=require('jsonwebtoken')
+import mongoose from "mongoose"
+import jwt from 'jsonwebtoken'
 
-const auth = (req,res,next)=>{
+export const auth = (req,res,next)=>{
     const token = req.headers.authorization.split(" ")[1]
     if(!token){
         res.status(401).json({message:"Access denied"})
@@ -23,5 +23,3 @@ const auth = (req,res,next)=>{
         res.status(500).json({error:error.message})
     }
 }
-
-module.exports=auth

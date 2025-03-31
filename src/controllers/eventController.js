@@ -1,5 +1,5 @@
-const express=require('express')
-const Event = require('../models/eventModel.js')
+import express from 'express'
+import {Event} from '../models/eventModel.js'
 
 // get all event
 const getAllEvent= async (req,res)=>{
@@ -131,4 +131,4 @@ const deleteEvent= async (req,res)=>{
     }
 }
 
-module.exports = {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent,registerEvent}
+export {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent,registerEvent}

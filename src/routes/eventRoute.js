@@ -1,6 +1,6 @@
-const {Router}=require('express')
-const {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent,registerEvent}=require('../controllers/eventController.js')
-const auth=require('../middleware/auth.js')
+import {Router} from 'express'
+import {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent,registerEvent} from '../controllers/eventController.js'
+import {auth} from '../middleware/auth.js'
 
 const router=Router()
 
@@ -13,4 +13,4 @@ router.put('/:id/register',auth,registerEvent)
 router.delete('/:id',auth,deleteEvent)
 
 
-module.exports=router
+export const eventRoute=router
