@@ -2,28 +2,64 @@ import express from 'express'
 import {User} from '../models/userModel.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import {uplodOnCloudinary} from '../utils/fileUplode.js'
 
+
+//USER
+const checkStatus = async (req,res)=>{
+    try {
+        const token=req.token;
+        if(!token){
+            res.status(200).json({message:"No Tken Found"})
+        }
+        const satus= jwt.verify(token,process.env.JWT_SECRET);
+        if(satus)res.staus(200).json({message:"Welcom"})
+            res.satus(203).json({message:"Login first"});
+    } catch (error) {
+        res.status(404).json({message:error})
+    }
+}
 
 // register
 const registerUser= async (req,res)=>{
     try {
-        const{ username, email, password }=req.body
+        const{ username, email, password ,fullname}=req.body
 
+        if([username,email,password,fullname].some((field)=>field?.trim()==="")){
+            res.status(400).json({message:` ${field} can't be empty`});
+            return;
+        }
         // existing user check
-        const existingUser=await User.findOne({email})
+        const existingUser=await User.findOne({
+            $or: [{email},{username}]
+        })
         if(existingUser){
-            res.status(400).json({message:"User already exisits"})
+            res.status(409).json({message:"User already exisits"})
             return
         }
-
+        const avatarLocalPath=req.file?.path;
+        let avatar;
+        if(!avatarLocalPath){
+            avatar=process.env.DEFAULT_USER;
+        }
+        else{
+            avatar=await uplodOnCloudinary(avatarLocalPath);
+            avatar=avatar?.url;
+        }
+        if(!avatar){
+            res.status(500).json({message:"Cloudinary error"});
+            return;
+        }
         //password hash
         const hashPass= await bcrypt.hash(password,10)
 
         //creating new user
-        newUser = new User({
-            username,
+        const newUser = new User({
+            username:username.toLowerCase(),
             email,
-            password:hashPass
+            fullname,
+            password:hashPass,
+            avatar
         })
         await newUser.save()
         res.status(201).json({message:"User registerd successfull"})
@@ -65,4 +101,4 @@ const loginUser= async (req,res)=>{
     }
 }
 
-export {registerUser,loginUser}
+export {registerUser,loginUser,checkStatus}

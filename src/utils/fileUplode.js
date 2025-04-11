@@ -1,6 +1,4 @@
 import {v2 as cloudinary} from "cloudinary";
-import { log } from "console";
-import { response } from "express";
 import fs from "fs";
 
 cloudinary.config({
@@ -18,7 +16,7 @@ export const uplodOnCloudinary = async (localFilePath)=>{
         const response= await cloudinary.uploader.upload(localFilePath,{
             resource_type:"image"
         })
-        console.log("file is uploded:",response.url);
+        fs.unlinkSync(localFilePath)
         return response;
 
     }catch (error){
@@ -26,6 +24,5 @@ export const uplodOnCloudinary = async (localFilePath)=>{
         fs.unlinkSync(localFilePath)
         console.log(error);
         return null;
-        
     }
 }
