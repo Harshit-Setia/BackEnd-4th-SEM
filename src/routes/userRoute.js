@@ -1,6 +1,7 @@
 import {Router} from 'express'
-import {loginUser,registerUser,checkStatus} from '../controllers/userController.js'
+import {loginUser,registerUser,checkStatus, logoutUser} from '../controllers/userController.js'
 import { upload } from '../middleware/multer.js'
+import { auth } from '../middleware/auth.js'
 
 const router=Router()
 
@@ -8,5 +9,6 @@ const router=Router()
 router.get('/',checkStatus)
 router.post('/register',upload.single("avatar"),registerUser)
 router.post('/login',loginUser)
+router.post('/logout',auth,logoutUser)
 
 export const userRoute=router

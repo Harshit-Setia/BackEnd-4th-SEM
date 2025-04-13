@@ -94,11 +94,23 @@ const loginUser= async (req,res)=>{
         }
         const token= jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:"7d"})
 
-        res.status(200).json({token})
+        const options={
+            httpOnly:true,
+            secure:true
+        }
+
+        res.status(200).cookie("token",token,options).json({user,token})
 
     } catch (error) {
         res.status(500).json({error:error.message})
     }
 }
+const logoutUser = (req,res)=>{
+    try{
+        res.status(200).clearCookie("token",{httpOnly:true,secure:true}).json({message:"Logout successFull"})
+    }catch(error){
+        res.status(500).json({message:error.message})
+    }
+}
 
-export {registerUser,loginUser,checkStatus}
+export {registerUser,loginUser,checkStatus, logoutUser}

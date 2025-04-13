@@ -2,9 +2,9 @@ import mongoose from "mongoose"
 import jwt from 'jsonwebtoken'
 
 export const auth = (req,res,next)=>{
-    const token = req.headers.authorization.split(" ")[1]
+    const token =req.cookies?.token || req.headers?.authorization?.split(" ")[1]
     if(!token){
-        res.status(401).json({message:"Access denied"})
+        res.status(401).json({message:"Login First"})
         return
     }
 
