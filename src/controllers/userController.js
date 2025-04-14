@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import {uplodOnCloudinary} from '../utils/fileUplode.js'
 
 
+
 //USER
 const checkStatus = async (req,res)=>{
     try {
@@ -112,5 +113,67 @@ const logoutUser = (req,res)=>{
         res.status(500).json({message:error.message})
     }
 }
+const updateUser = async (req, res) => {
+    try {
+      // Assuming you are using authentication middleware to get the user's ID from the token
+      const userId = req.user?.id; // Access user ID from the authenticated request
+  
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized: User ID not found' });
+      }
+  
+      const { username, email, fullname, password, avatar } = req.body;
+      const updates = {};
+  
+      if (username) {
+        updates.username = username.toLowerCase();
+      }
+      if (email) {
+        // Check if the new email already exists for another user
+        const existingUserWithEmail = await User.findOne({ email, _id: { $ne: userId } });
+        if (existingUserWithEmail) {
+          return res.status(409).json({ message: 'Email already exists for another user' });
+        }
+        updates.email = email;
+      }
+      if (fullname) {
+        updates.fullname = fullname;
+      }
+      if (password) {
+        const hashPass = await bcrypt.hash(password, 10);
+        updates.password = hashPass;
+      }
+      if (req.file) {
+        const avatarLocalPath = req.file.path;
+        const cloudinaryResponse = await uplodOnCloudinary(avatarLocalPath);
+        if (!cloudinaryResponse) {
+          return res.status(500).json({ message: 'Error uploading new avatar to Cloudinary' });
+        }
+        updates.avatar = cloudinaryResponse.url;
+      } else if (avatar && avatar !== process.env.DEFAULT_USER) {
+        updates.avatar = avatar; // Allow updating with an existing URL
+      }
+  
+      // If no updates are provided, return a message
+      if (Object.keys(updates).length === 0) {
+        return res.status(200).json({ message: 'No updates provided' });
+      }
+  
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: updates },
+        { new: true, runValidators: true } // Return the updated document and run schema validators
+      ).select('-password'); // Exclude the password from the response
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+  
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 
-export {registerUser,loginUser,checkStatus, logoutUser}
+export {registerUser,loginUser,checkStatus, logoutUser, updateUser}
