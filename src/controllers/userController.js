@@ -126,11 +126,15 @@ const updateUser = async (req, res) => {
       const updates = {};
   
       if (username) {
+        const existingUserWithUsername = await User.findOne({username});
+        if (existingUserWithUsername) {
+          return res.status(409).json({ message: 'Username already exists for another user' });
+        }
         updates.username = username.toLowerCase();
       }
       if (email) {
         // Check if the new email already exists for another user
-        const existingUserWithEmail = await User.findOne({ email, _id: { $ne: userId } });
+        const existingUserWithEmail = await User.findOne({email});
         if (existingUserWithEmail) {
           return res.status(409).json({ message: 'Email already exists for another user' });
         }
@@ -158,7 +162,7 @@ const updateUser = async (req, res) => {
       if (Object.keys(updates).length === 0) {
         return res.status(200).json({ message: 'No updates provided' });
       }
-  
+
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         { $set: updates },
