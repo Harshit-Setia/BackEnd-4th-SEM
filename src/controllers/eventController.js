@@ -1,5 +1,6 @@
 import express from 'express'
 import {Event} from '../models/eventModel.js'
+import {uplodOnCloudinary} from '../utils/fileUplode.js'
 
 // get all event
 const getAllEvent= async (req,res)=>{
@@ -36,8 +37,32 @@ const createEvent= async (req,res)=>{
     try {
         
         const userId=req.user.id
-
-        const newEvent=new Event({...req.body,head:userId})
+        const {name,date,location,desc}=req.body;
+        if([name,date,location,desc].some((field)=>field?.trim()==="")){
+            res.status(400).json({message:` ${field} can't be empty`});
+            return;
+        }
+        const existingEvent=await Event.findOne({name})
+        if(existingEvent){
+            res.status(409).json({message:"Event already exisits"})
+            return
+        }
+        const posterLocalpath=req.file?.path;
+        if(!posterLocalpath){
+            res.status(400).json({message:"Poster is required"})
+        }
+        const poster=await uplodOnCloudinary(posterLocalpath);
+        if(!poster){
+            res.status(500).json({message:"Cloudinary Error"});
+        }
+        const newEvent=new Event({
+            name,
+            date,
+            location,
+            desc,
+            poster:poster.url,
+            head:userId
+        })
         const savedEvent=await newEvent.save()
 
         res.status(201).json(savedEvent)
