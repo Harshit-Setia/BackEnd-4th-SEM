@@ -6,7 +6,7 @@ const UserSchema = new Schema({
     password:{type:String,required: true},
     fullname:{type:String,required:true},
     avatar:{type:String,required:true},
-    registeredEvent:{type:Schema.Types.ObjectId,ref:"Event"},
+    registeredEvent:{type:[mongoose.Schema.Types.ObjectId],ref:"Event"},
     refresfToken:{type:String}
 })
 

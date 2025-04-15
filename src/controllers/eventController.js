@@ -1,6 +1,7 @@
 import express from 'express'
 import {Event} from '../models/eventModel.js'
 import {uplodOnCloudinary} from '../utils/fileUplode.js'
+import { User } from '../models/userModel.js'
 
 // get all event
 const getAllEvent= async (req,res)=>{
@@ -104,24 +105,29 @@ const registerEvent = async (req, res) => {
     try {
         const userId = req.user.id;
         const eventId = req.params.id;
-
+        
         const event = await Event.findById(eventId);
-
+        const user = await User.findById(userId);
+        
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-
         const attendeeIndex = event.attendees.indexOf(userId);
+        const registeredIndex=user.registeredEvent.indexOf(eventId);
 
-        if (attendeeIndex === -1) {
+        if (attendeeIndex === -1&&registeredIndex===-1) {
             // User is not registered, so register them
             event.attendees.push(userId);
+            user.registeredEvent.push(eventId);
             await event.save();
+            await user.save();
             return res.status(200).json({ message: "Registered successfully" });
         } else {
             // User is already registered, so unregister them
             event.attendees.splice(attendeeIndex, 1);
+            user.registeredEvent.splice(registeredIndex, 1);
             await event.save();
+            await user.save();
             return res.status(200).json({ message: "Unregistered successfully" });
         }
     } catch (error) {

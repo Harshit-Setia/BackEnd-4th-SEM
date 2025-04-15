@@ -61,6 +61,7 @@ const registerUser= async (req,res)=>{
             fullname,
             password:hashPass,
             avatar
+
         })
         await newUser.save()
         res.status(201).json({message:"User registerd successfull"})
@@ -115,7 +116,6 @@ const logoutUser = (req,res)=>{
 }
 const updateUser = async (req, res) => {
     try {
-      // Assuming you are using authentication middleware to get the user's ID from the token
       const userId = req.user?.id; // Access user ID from the authenticated request
   
       if (!userId) {
