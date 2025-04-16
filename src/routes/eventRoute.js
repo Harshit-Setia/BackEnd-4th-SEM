@@ -8,7 +8,7 @@ const router=Router()
 // api/events
 router.get('/',getAllEvent)
 router.get('/:id',getEvent)
-router.post('/',auth,upload.single("poster"),createEvent)
+router.post('/create',auth,upload.single("poster"),createEvent)
 router.put('/:id',auth,updateEvent)
 router.put('/:id/register',auth,registerEvent)
 router.delete('/:id',auth,deleteEvent)

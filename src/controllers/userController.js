@@ -7,15 +7,11 @@ import {uplodOnCloudinary} from '../utils/fileUplode.js'
 
 
 //USER
-const checkStatus = async (req,res)=>{
+const userData = async (req,res)=>{
     try {
-        const token=req.token;
-        if(!token){
-            res.status(200).json({message:"No Tken Found"})
-        }
-        const satus= jwt.verify(token,process.env.JWT_SECRET);
-        if(satus)res.staus(200).json({message:"Welcom"})
-            res.satus(203).json({message:"Login first"});
+        const userId = req.user?.id || req.params.id;
+        const user=await User.findById(userId).select('-password');
+        res.status(200).json(user);
     } catch (error) {
         res.status(404).json({message:error})
     }
@@ -180,4 +176,4 @@ const updateUser = async (req, res) => {
     }
   };
 
-export {registerUser,loginUser,checkStatus, logoutUser, updateUser}
+export {registerUser,loginUser,userData, logoutUser, updateUser}
