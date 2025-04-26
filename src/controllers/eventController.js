@@ -1,165 +1,163 @@
-import express from 'express'
-import {Event} from '../models/eventModel.js'
-import {uplodOnCloudinary} from '../utils/fileUplode.js'
-import { User } from '../models/userModel.js'
+import express from "express";
+import { Event } from "../models/eventModel.js";
+import { uploadOnCloudinary } from "../utils/fileUpload.js";
+import { User } from "../models/userModel.js";
 
 // get all event
-const getAllEvent= async (req,res)=>{
-    try {
-        
-        const events=await Event.find()
-        res.status(200).json(events)
-
-    } catch (error) {
-        res.status(500).json({error:error.message})
-    }
-}
+const getAllEvent = async (req, res) => {
+  try {
+    const events = await Event.find();
+    return res.status(200).json(events);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 // get event by id
-const getEvent= async (req,res)=>{
-    try {
-        
-        const eventId=req.params.id
-        const event=await Event.findById(eventId)
+const getEvent = async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const event = await Event.findById(eventId);
 
-        if(!event){
-            res.status(404).json({message:"Event not Found"})
-            return
-        }
-        res.status(200).json(event)
-
-    } catch (error) {
-        res.status(500).json({error:error.message})
+    if (!event) {
+    return res.status(404).json({ message: "Event not Found" });
     }
-}
+    return res.status(200).json(event);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 // create new event
-const createEvent= async (req,res)=>{
-    try {
-        
-        const userId=req.user.id
-        const {name,date,location,desc}=req.body;
-        if([name,date,location,desc].some((field)=>field?.trim()==="")){
-            res.status(400).json({message:` ${field} can't be empty`});
-            return;
-        }
-        const existingEvent=await Event.findOne({name})
-        if(existingEvent){
-            res.status(409).json({message:"Event already exisits"})
-            return
-        }
-        const posterLocalpath=req.file?.path;
-        if(!posterLocalpath){
-            res.status(400).json({message:"Poster is required"})
-        }
-        const poster=await uplodOnCloudinary(posterLocalpath);
-        if(!poster){
-            res.status(500).json({message:"Cloudinary Error"});
-        }
-        const newEvent=new Event({
-            name,
-            date,
-            location,
-            desc,
-            poster:poster.url,
-            head:userId
-        })
-        const savedEvent=await newEvent.save()
-
-        res.status(201).json(savedEvent)
-
-    } catch (error) {
-        res.status(500).json({error:error.message})
+const createEvent = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, date, location, desc } = req.body;
+    if ([name, date, location, desc].some((field) => field?.trim() === "")) {
+    return res.status(400).json({ message: ` ${field} can't be empty` });
     }
-}
+    const existingEvent = await Event.findOne({ name });
+    if (existingEvent) {
+    return res.status(409).json({ message: "Event already exisits" });
+    }
+    const posterLocalpath = req.file?.path;
+    if (!posterLocalpath) {
+    return res.status(400).json({ message: "Poster is required" });
+    }
+    const poster = await uploadOnCloudinary(posterLocalpath);
+    if (!poster) {
+    return res.status(500).json({ message: "Cloudinary Error" });
+    }
+    const newEvent = new Event({
+      name,
+      date,
+      location,
+      desc,
+      poster: poster.url,
+      head: userId,
+    });
+    const savedEvent = await newEvent.save();
+
+    return res.status(201).json(savedEvent);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 // update event
-const updateEvent= async (req,res)=>{
-    try {
-        
-        const userId=req.user.id
+const updateEvent = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-        const event=await Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id);
 
-        if(!event){
-            res.status(404).json({message:"Event not found"})
-            return
-        }
-
-        if(event.head.toString()!==userId){
-            res.status(403).json({message:"You donot have permission to update this event"})
-            return
-        }
-
-        const updatedEvent=await Event.findByIdAndUpdate(req.params.id, req.body,{new:true})
-
-        res.status(204).json(updatedEvent)
-
-    } catch (error) {
-        res.status(500).json({error:error.message})
+    if (!event) {
+    return res.status(404).json({ message: "Event not found" });
     }
-}
+
+    if (event.head.toString() !== userId) {
+      res
+        .status(403)
+        .json({ message: "You donot have permission to update this event" });
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    return res.status(204).json(updatedEvent);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 //regester/un-regester
 const registerEvent = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const eventId = req.params.id;
-        
-        const event = await Event.findById(eventId);
-        const user = await User.findById(userId);
-        
-        if (!event) {
-            return res.status(404).json({ message: "Event not found" });
-        }
-        const attendeeIndex = event.attendees.indexOf(userId);
-        const registeredIndex=user.registeredEvent.indexOf(eventId);
+  try {
+    const userId = req.user.id;
+    const eventId = req.params.id;
 
-        if (attendeeIndex === -1&&registeredIndex===-1) {
-            // User is not registered, so register them
-            event.attendees.push(userId);
-            user.registeredEvent.push(eventId);
-            await event.save();
-            await user.save();
-            return res.status(200).json({ message: "Registered successfully" });
-        } else {
-            // User is already registered, so unregister them
-            event.attendees.splice(attendeeIndex, 1);
-            user.registeredEvent.splice(registeredIndex, 1);
-            await event.save();
-            await user.save();
-            return res.status(200).json({ message: "Unregistered successfully" });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    const event = await Event.findById(eventId);
+    const user = await User.findById(userId);
+
+    if (!event) {
+    return res.status(404).json({ message: "Event not found" });
     }
+    const attendeeIndex = event.attendees.indexOf(userId);
+    const registeredIndex = user.registeredEvent.indexOf(eventId);
+
+    if (attendeeIndex === -1 && registeredIndex === -1) {
+      // User is not registered, so register them
+      event.attendees.push(userId);
+      user.registeredEvent.push(eventId);
+      await event.save();
+      await user.save();
+    return res.status(200).json({ message: "Registered successfully" });
+    } else {
+      // User is already registered, so unregister them
+      event.attendees.splice(attendeeIndex, 1);
+      user.registeredEvent.splice(registeredIndex, 1);
+      await event.save();
+      await user.save();
+    return res.status(200).json({ message: "Unregistered successfully" });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 // delete events
-const deleteEvent= async (req,res)=>{
-    try {
-        
-        const userId=req.user.id
+const deleteEvent = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-        const event=await Event.findById(req.params.id)
+    const event = await Event.findById(req.params.id);
 
-        if(!event){
-            res.status(404).json({message:"Event not found"})
-            return
-        }
-
-        if(event.head.toString()!==userId){
-            res.status(403).json({message:"You donot have permission to update this event"})
-            return
-        }
-
-        await Event.findByIdAndDelete(req.params.id)
-
-        res.status(200).json({message:"Event Deleted"})
-
-    } catch (error) {
-        res.status(500).json({error:error.message})
+    if (!event) {
+    return res.status(404).json({ message: "Event not found" });
     }
-}
 
-export {getAllEvent,getEvent,createEvent,updateEvent,deleteEvent,registerEvent}
+    if (event.head.toString() !== userId) {
+      res
+        .status(403)
+        .json({ message: "You donot have permission to update this event" });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
+
+    return res.status(200).json({ message: "Event Deleted" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export {
+  getAllEvent,
+  getEvent,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  registerEvent,
+};

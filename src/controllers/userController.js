@@ -2,7 +2,7 @@ import express from 'express'
 import {User} from '../models/userModel.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import {uplodOnCloudinary} from '../utils/fileUplode.js'
+import {uploadOnCloudinary} from '../utils/fileUpload.js'
 
 
 
@@ -11,9 +11,9 @@ const userData = async (req,res)=>{
     try {
         const userId = req.user?.id || req.params.id;
         const user=await User.findById(userId).select('-password');
-        res.status(200).json(user);
+        return  res.status(200).json(user);
     } catch (error) {
-        res.status(404).json({message:error})
+        return  res.status(404).json({message:error})
     }
 }
 
@@ -23,16 +23,14 @@ const registerUser= async (req,res)=>{
         const{ username, email, password ,fullname}=req.body
 
         if([username,email,password,fullname].some((field)=>field?.trim()==="")){
-            res.status(400).json({message:` ${field} can't be empty`});
-            return;
+          return res.status(400).json({message:` ${field} can't be empty`});
         }
         // existing user check
         const existingUser=await User.findOne({
             $or: [{email},{username}]
         })
         if(existingUser){
-            res.status(409).json({message:"User already exisits"})
-            return
+          return res.status(409).json({message:"User already exisits"})
         }
         const avatarLocalPath=req.file?.path;
         let avatar;
@@ -40,12 +38,11 @@ const registerUser= async (req,res)=>{
             avatar=process.env.DEFAULT_USER;
         }
         else{
-            avatar=await uplodOnCloudinary(avatarLocalPath);
+            avatar=await uploadOnCloudinary(avatarLocalPath);
             avatar=avatar?.url;
         }
         if(!avatar){
-            res.status(500).json({message:"Cloudinary error"});
-            return;
+          return res.status(500).json({message:"Cloudinary error"});
         }
         //password hash
         const hashPass= await bcrypt.hash(password,10)
@@ -60,54 +57,66 @@ const registerUser= async (req,res)=>{
 
         })
         await newUser.save()
-        res.status(201).json({message:"User registerd successfull"})
+        return  res.status(201).json({message:"User registerd successfull"})
     } catch (error) {
-        res.status(500).json({error:error.message})
+        return  res.status(500).json({error:error.message})
     }
 }
 
 // login
 const loginUser= async (req,res)=>{
+    const userId=req.user?.id
+    if(userId){
+      return res.status(200).json({message:"Logedin"})
+    }
     try {
         const { email, password } = req.body;
         
         // existing user check
         const user=await User.findOne({email})
         if(!user){
-            res.status(404).json({message:"User Not Found"})
-            return
+          return res.status(404).json({message:"User Not Found"}) 
         }
 
         // compare password
         const isMatch=await bcrypt.compare(password,user.password)
         if(!isMatch){
-            res.status(400).json({message:"Invalid Password"})
-            return
+          return res.status(400).json({message:"Invalid Password"})
         }
 
         // generate JWT
         if(!process.env.JWT_SECRET){
-            res.status(500).json({message:"Server Error, Contact admin"})
-            return
+          return res.status(500).json({message:"Server Error, Contact admin"})
+            
         }
-        const token= jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:"7d"})
+        const token = jwt.sign(
+          {
+            id: user._id,
+            email: user.email,
+            fullname: user.fullname,
+            avatar: user.avatar,
+            registeredEvents: user.registeredEvent,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: "7d" }
+        );
 
         const options={
-            httpOnly:true,
-            secure:true
+          httpOnly:true,
+          secure:true
         }
 
-        res.status(200).cookie("token",token,options).json({user,token})
+      return  res.status(200).cookie("token",token,options).json({token})
 
     } catch (error) {
-        res.status(500).json({error:error.message})
+      return  res.status(500).json({error:error.message})
     }
 }
 const logoutUser = (req,res)=>{
     try{
-        res.status(200).clearCookie("token",{httpOnly:true,secure:true}).json({message:"Logout successFull"})
+      return  res.status(200).clearCookie("token",{httpOnly:true,secure:true}).json({message:"Logout successFull"})
     }catch(error){
-        res.status(500).json({message:error.message})
+      return  res.status(500).json({message:error.message})
     }
 }
 const updateUser = async (req, res) => {
@@ -145,7 +154,7 @@ const updateUser = async (req, res) => {
       }
       if (req.file) {
         const avatarLocalPath = req.file.path;
-        const cloudinaryResponse = await uplodOnCloudinary(avatarLocalPath);
+        const cloudinaryResponse = await uploadOnCloudinary(avatarLocalPath);
         if (!cloudinaryResponse) {
           return res.status(500).json({ message: 'Error uploading new avatar to Cloudinary' });
         }
@@ -169,10 +178,10 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+      return  res.status(200).json({ message: 'User updated successfully', user: updatedUser });
   
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      return  res.status(500).json({ message: error.message });
     }
   };
 

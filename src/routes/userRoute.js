@@ -9,7 +9,7 @@ const router=Router()
 router.get('/profile',auth,userData)
 router.get('/:id',userData)
 router.post('/register',upload.single("avatar"),registerUser)
-router.post('/login',loginUser)
+router.post('/login', auth, loginUser)
 router.post('/logout',auth,logoutUser)
 router.put('/update',auth,upload.single("avatar"),updateUser)
 

@@ -14,4 +14,5 @@ router.put('/:id/register',auth,registerEvent)
 router.delete('/:id',auth,deleteEvent)
 
 
+
 export const eventRoute=router

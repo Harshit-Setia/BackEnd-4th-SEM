@@ -2,12 +2,13 @@ import {v2 as cloudinary} from "cloudinary";
 import fs from "fs";
 
 cloudinary.config({
+    // add to .env
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET
 });
 
-export const uplodOnCloudinary = async (localFilePath)=>{
+export const uploadOnCloudinary = async (localFilePath)=>{
     try{
 
         if(!localFilePath){
