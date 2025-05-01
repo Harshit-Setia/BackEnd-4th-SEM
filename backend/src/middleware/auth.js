@@ -19,6 +19,6 @@ export const auth = (req,res,next)=>{
         next()
     }
     catch(error){
-        return res.status(501).json({error:"error"})
+        return res.status(500).json({error:"error"})
     }
 }
