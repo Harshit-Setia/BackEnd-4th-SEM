@@ -67,29 +67,43 @@ const createEvent = async (req, res) => {
 // update event
 const updateEvent = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // Get the user ID from the authenticated user
+    const eventId = req.params.id; // Get the event ID from the request parameters
+    const { name, date, location, desc } = req.body; // Extract fields from the request body
 
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(eventId); // Find the event by ID
 
     if (!event) {
-    return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ message: "Event not found" }); // If event doesn't exist
     }
 
+    // Check if the user is the head of the event
     if (event.head.toString() !== userId) {
-      res
+      return res
         .status(403)
-        .json({ message: "You donot have permission to update this event" });
+        .json({ message: "You do not have permission to update this event" });
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    // Update the event fields if provided in the request body
+    if (name) event.name = name;
+    if (date) event.date = date;
+    if (location) event.location = location;
+    if (desc) event.desc = desc;
 
-    return res.status(204).json(updatedEvent);
+    // If a new poster is uploaded, update it
+    if (req.file?.path) {
+      const poster = await uploadOnCloudinary(req.file.path);
+      if (!poster) {
+        return res.status(500).json({ message: "Cloudinary Error" });
+      }
+      event.poster = poster.url;
+    }
+
+    const updatedEvent = await event.save(); // Save the updated event
+
+    return res.status(200).json(updatedEvent); // Return the updated event
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message }); // Handle errors
   }
 };
 

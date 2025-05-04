@@ -9,7 +9,7 @@ const router=Router()
 router.get('/',getAllEvent)
 router.get('/:id',getEvent)
 router.post('/create',auth,upload.single("poster"),createEvent)
-router.put('/:id',auth,updateEvent)
+router.put('/:id',auth,upload.single("poster"),updateEvent)
 router.put('/:id/register',auth,registerEvent)
 router.delete('/:id',auth,deleteEvent)
 

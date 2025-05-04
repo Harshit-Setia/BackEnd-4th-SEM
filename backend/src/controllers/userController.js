@@ -106,7 +106,7 @@ const loginUser= async (req,res)=>{
           secure:true
         }
 
-      return  res.status(200).cookie("token",token,options).json({token})
+      return  res.status(200).cookie("token",token,options).json({token,_id:user._id})
 
     } catch (error) {
       return  res.status(500).json({error:error.message})

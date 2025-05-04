@@ -1,44 +1,32 @@
-// App.jsx
-import React, { useState, useEffect } from 'react';
-import { CardList } from './CardList';
-import { Nav } from './Nav.jsx';
+import React from 'react'
+import Layout from './Layout'
+import { createBrowserRouter, Route, RouterProvider, createRoutesFromElements } from 'react-router-dom'
+import { Home, EventList,EventDetails, Login, Signup, EventAddUpdate } from './Components'
 
-const App = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [theme, setTheme] = useState(() => {
-    try {
-      const storedTheme = localStorage.getItem('theme');
-      return storedTheme || (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    } catch (error) {
-      console.error('Error getting theme from localStorage:', error);
-      return (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    }
-  });
 
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.body.classList.add('dark');
-    } else {
-      document.body.classList.remove('dark');
-    }
-    try {
-      localStorage.setItem('theme', theme);
-    } catch (error) {
-      console.error('Error setting theme in localStorage:', error);
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path='/' element={<Layout/>}>
+      <Route path='' element={<Home />}/> //pending
+      <Route path='login' element={<Login/>}/>  //done
+      <Route path='signup' element={<Signup/>}/>  //done
+      <Route path='events/' element={<EventList/>}/>  //done
+      <Route path='events/add' element={<EventAddUpdate/>}/>  //done
+      <Route path='events/:id' element={<EventDetails/>}/>  //done
+      <Route path='events/:id/edit' element={<EventAddUpdate/>}/>  //done
+      <Route path='user/' element={<Home/>}/> //pending
+      <Route path='user/edit' element={<Home/>}/> //pending
+      <Route path='user/events' element={<Home/>}/> //pending
+    </Route>
+  )
+)
+function App() {
 
   return (
-    <div className="flex flex-col h-screen">
-      <Nav theme={theme} toggleTheme={toggleTheme} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      {/* <div className="h-[70px] w-full"/> */}
-      <CardList searchQuery={searchQuery}/>
-    </div>
-  );
-};
+    <>
+      <RouterProvider router={router}/>
+    </>
+  )
+}
 
-export default App;
+export default App

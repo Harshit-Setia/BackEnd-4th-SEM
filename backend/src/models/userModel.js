@@ -7,7 +7,6 @@ const UserSchema = new Schema({
     fullname:{type:String,required:true},
     avatar:{type:String,required:true},
     registeredEvent:{type:[mongoose.Schema.Types.ObjectId],ref:"Event"},
-    refresfToken:{type:String}
 })
 
 export const User=mongoose.model("User",UserSchema)
