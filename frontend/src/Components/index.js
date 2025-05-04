@@ -6,8 +6,8 @@ import EventDetails from "./EventDetails/EventDetails";
 import Login from "./LoginSignup/Login";
 import Signup from "./LoginSignup/Signup";
 import EventAddUpdate from "./EventDetails/EventAddUpdate";
+import User from "./User/User";
 
 
 
-
-export { Header, Footer, Home ,EventList, EventDetails, Login, Signup, EventAddUpdate };
+export { Header, Footer, Home ,EventList, EventDetails, Login, Signup, EventAddUpdate, User };
