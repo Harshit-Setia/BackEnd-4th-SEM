@@ -7,6 +7,7 @@ function EventDetails() {
     const [eventData, setEventData] = useState([]);
     const [isRegistered, setIsRegistered] = useState(false); // State to track if the user is registered
     const [head, setHead] = useState(false); // State to track if the user is the event creator
+    const [showAttendees, setShowAttendees] = useState(false); // State to toggle attendees list
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -72,6 +73,8 @@ function EventDetails() {
                     alert('Successfully registered for the event.');
                     navigate(-1); // Navigate back to the previous page
                 } else {
+                    window.alert('Login to register for the event');
+                    navigate('/login'); // Redirect to login page if not authenticated
                     console.error('Error registering for event');
                 }
             } catch (error) {
@@ -127,7 +130,7 @@ function EventDetails() {
             <div className="w-full md:w-1/2 lg:w-1/2 md:pr-6">
             <button
                 onClick={() => navigate(-1)}
-                className=" bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
             >
                 Back
             </button>
@@ -150,19 +153,43 @@ function EventDetails() {
 
                 {/* Buttons for Event Creator */}
                 {head && (
-                    <div className="flex space-x-4 mt-4">
+                    <div className="flex flex-col space-y-4 mt-4">
+                        <div className="flex space-x-4">
+                            <button
+                                onClick={handleEdit}
+                                className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer"
+                            >
+                                Edit Event
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-500 text-white px-4 py-2 rounded-lg cursor-pointer"
+                            >
+                                Delete Event
+                            </button>
+                        </div>
                         <button
-                            onClick={handleEdit}
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer"
+                            onClick={() => setShowAttendees(!showAttendees)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded-lg cursor-pointer"
                         >
-                            Edit Event
+                            {showAttendees ? 'Hide Attendees' : 'Show Attendees'}
                         </button>
-                        <button
-                            onClick={handleDelete}
-                            className="bg-red-500 text-white px-4 py-2 rounded-lg cursor-pointer"
-                        >
-                            Delete Event
-                        </button>
+                        {showAttendees && (
+                            <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+                                <h3 className="text-lg font-bold mb-2">Attendees:</h3>
+                                <ul className="list-disc pl-5">
+                                    {eventData.attendees && eventData.attendees.length > 0 ? (
+                                        eventData.attendees.map((attendee, index) => (
+                                            <li key={index} className="text-gray-700">
+                                                {attendee}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <p className="text-gray-500">No attendees yet.</p>
+                                    )}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

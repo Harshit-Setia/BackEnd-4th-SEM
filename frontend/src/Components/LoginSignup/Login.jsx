@@ -68,6 +68,7 @@ function Login() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </div>
+                <p className="flex text-black text-s italic mb-4">Don't have account?<p onClick={()=>window.location.href='/signup'} className='cursor-pointer text-blue-500 active:text-red-500'> Signup</p></p>
                 <button
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     type="submit"

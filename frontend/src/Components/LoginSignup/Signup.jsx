@@ -114,7 +114,7 @@ function Signup() {
                             onChange={handleAvatarChange}
                         />
                     </div>
-
+                    <p className="flex text-black text-s italic mb-4">Have account? <p onClick={()=>window.location.href='/login'} className='cursor-pointer text-blue-500 active:text-red-500'> Login</p></p>
                     <button onClick={handleSubmit} type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
                         Sign Up
                     </button>

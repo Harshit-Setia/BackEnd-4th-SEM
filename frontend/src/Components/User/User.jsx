@@ -100,7 +100,14 @@ function User() {
                 >
                   Edit Profile
                 </button>
+                <button
+                  onClick={()=> window.location.href = 'events/add'}
+                  className="mt-4 w-full bg-red-400 text-white py-2 rounded hover:bg-red-500"
+                >
+                  Add Event
+                </button>
               </>
+
             ) : (
               <form onSubmit={handleEditSubmit} className="space-y-4">
                 <input

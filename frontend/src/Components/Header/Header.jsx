@@ -10,6 +10,7 @@ function Header() {
         localStorage.removeItem('userId');
         window.dispatchEvent(new Event('tokenChanged')); // Dispatch custom event
         setToken(null); // Update local state
+        window.location.reload();
     };
 
     useEffect(() => {
@@ -22,7 +23,7 @@ function Header() {
 
         // Listen for `storage` event to handle changes across tabs/windows
         window.addEventListener('storage', handleTokenChange);
-
+        // window.location.reload(); // Reload the page to ensure the latest token is fetched
         return () => {
             window.removeEventListener('tokenChanged', handleTokenChange); // Cleanup custom event listener
             window.removeEventListener('storage', handleTokenChange); // Cleanup storage event listener
@@ -31,7 +32,7 @@ function Header() {
 
     return (
         <header className="bg-gray-800 text-white py-2 px-4 flex justify-between items-center h-16">
-            <button onClick={() => navigate('/')} className="focus:outline-none">
+            <button  onClick={() => navigate('/')} className="focus:outline-none cursor-pointer">
                 <img src="../../home.png" className="h-10" alt="EventSync" />
             </button>
             <nav className="flex space-x-4">
