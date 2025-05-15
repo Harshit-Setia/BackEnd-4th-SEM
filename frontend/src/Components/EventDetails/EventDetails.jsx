@@ -137,7 +137,7 @@ function EventDetails() {
                 <h2 className="text-2xl font-bold mb-4">{eventData.name}</h2>
                 <p className="text-gray-700 mb-2">Date: {new Date(eventData.date).toLocaleDateString()}</p>
                 <p className="text-gray-700 mb-2">Location: {eventData.location}</p>
-                <p className="text-gray-700">{eventData.description}</p>
+                <p className="text-gray-700">{eventData.desc}</p>
 
                 {/* Buttons for Registered Users */}
                 {!head && (
